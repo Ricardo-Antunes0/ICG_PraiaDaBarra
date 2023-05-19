@@ -83,13 +83,32 @@ class Boat{
                 rot: 0,
             }
         });
+        this.minX = -2600; // Limite mínimo para o eixo X
+        this.maxX = 2100; // Valor máximo para o eixo X
+        this.minZ = -4900; // Valor mínimo para o eixo Z
+        this.maxZ = -1400; // Limite máximo para o eixo Z
     }
     update() {
-        if (this.boat){
-            this.boat.rotation.y += this.speed.rot
-            this.boat.translateX(this.speed.vel)
+        if (this.boat) {
+            // Verificar limite de posição em X
+            if (this.boat.position.x >= this.maxX) {
+                this.boat.position.x = this.maxX;
+            } else if (this.boat.position.x <= this.minX) {
+                this.boat.position.x = this.minX;
+            }
+
+            // Verificar limite de posição em Z
+            if (this.boat.position.z >= this.maxZ) {
+                this.boat.position.z = this.maxZ;
+            } else if (this.boat.position.z <= this.minZ) {
+                this.boat.position.z = this.minZ;
+            }
+
+            this.boat.rotation.y += this.speed.rot;
+            this.boat.translateX(this.speed.vel);
         }
     }
+
     stop(){
         this.speed.rot = 0
         this.speed.vel = 0
