@@ -1,0 +1,11 @@
+Model Information:
+* title:	Adidas Flip flop
+* source:	https://sketchfab.com/3d-models/adidas-flip-flop-48ed2dc6a95c4ce990e58172b366d9fd
+* author:	Cweyrich Flip flop (https://sketchfab.com/cweyrich)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Adidas Flip flop" (https://sketchfab.com/3d-models/adidas-flip-flop-48ed2dc6a95c4ce990e58172b366d9fd) by Cweyrich Flip flop (https://sketchfab.com/cweyrich) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

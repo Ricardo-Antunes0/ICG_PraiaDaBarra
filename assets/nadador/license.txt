@@ -1,0 +1,11 @@
+Model Information:
+* title:	Lifeguard Post LA/LS
+* source:	https://sketchfab.com/3d-models/lifeguard-post-lals-5014986c858c45c8a5e1a504cf38ea9b
+* author:	Zeneric (https://sketchfab.com/zeneric9)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Lifeguard Post LA/LS" (https://sketchfab.com/3d-models/lifeguard-post-lals-5014986c858c45c8a5e1a504cf38ea9b) by Zeneric (https://sketchfab.com/zeneric9) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

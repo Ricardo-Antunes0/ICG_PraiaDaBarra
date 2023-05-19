@@ -1,0 +1,11 @@
+Model Information:
+* title:	Lifeguard ATV Huntington Beach
+* source:	https://sketchfab.com/3d-models/lifeguard-atv-huntington-beach-8d03132f88a54edbaac94ec7a711ed01
+* author:	rwolzinger (https://sketchfab.com/rwolzinger)
+
+Model License:
+* license type:	CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)
+* requirements:	Author must be credited. No commercial use. Modified versions must have the same license.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Lifeguard ATV Huntington Beach" (https://sketchfab.com/3d-models/lifeguard-atv-huntington-beach-8d03132f88a54edbaac94ec7a711ed01) by rwolzinger (https://sketchfab.com/rwolzinger) licensed under CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)

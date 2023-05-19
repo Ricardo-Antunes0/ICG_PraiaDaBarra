@@ -1,0 +1,11 @@
+Model Information:
+* title:	Slipper
+* source:	https://sketchfab.com/3d-models/slipper-3b6df4dcefb147acb57a1dfb3ccf9f98
+* author:	lorranmedeiros (https://sketchfab.com/lorranmedeiros)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Slipper" (https://sketchfab.com/3d-models/slipper-3b6df4dcefb147acb57a1dfb3ccf9f98) by lorranmedeiros (https://sketchfab.com/lorranmedeiros) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
