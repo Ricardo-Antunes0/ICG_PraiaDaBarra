@@ -11,8 +11,8 @@ import { SpotLightHelper } from 'three';
 
 
 let camera, scene, renderer;
-let controls, water, gaivotas, sun;
-let boat,voley,peixes;
+let controls, water, gaivotas, sun, moon, directionalLight;
+let boat,voley,cloud;
 let step = 0;
 let step1 = 0;
 let sphere;
@@ -29,23 +29,14 @@ const options = {
     voleyColor1: '#ffffff',
     voleyColor2: '#ffea00',
     wireframe_ball: false,
-    speed: 0.01,
+    speed: 0,
     angle: 0.2,
     penumbra: 0,
     intensity: 1,
-    speed_volley: 0.01
+    speed_volley: 0 
 };
 
-class Peixes{
-    constructor(){  
-        loader.load("assets/peixe/fish_10.glb", (gltf) =>{
-        scene.add(gltf.scene)
-        gltf.scene.scale.set(1000, 1000,1000)
-        gltf.scene.position.set(0,400,0)
-        this.peixe = gltf.scene
-        });
-    }
-}
+
 
 class Gaivotas{
     constructor(){
@@ -145,8 +136,7 @@ class Voleyball{
         this.voley.getObjectByName('Object009_02_-_Default_0').material.color.set(options.voleyColor);
         this.voley.getObjectByName('Object009_01_-_Default_0').material.color.set(options.voleyColor1);
         this.voley.getObjectByName('Object009_03_-_Default_0').material.color.set(options.voleyColor2); 
-    }
-    
+    }   
 }
 
 init();
@@ -160,11 +150,8 @@ async function init() {
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild( renderer.domElement );
-    //renderer.setClearColor(0xF2F0DF);
 
-   
     camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000 );
-    //camera.position.set( 30, 30, 100 );
     camera.position.set( -5500, 3000, 10000 );
 
     controls = new OrbitControls( camera, renderer.domElement );
@@ -180,12 +167,10 @@ async function init() {
     scene.add(ambientLight);   
   
     renderer.setClearColor(0xadd8e6)
-    const directionalLight = new THREE.DirectionalLight(0xFFFFFF,0.8);
+    directionalLight = new THREE.DirectionalLight(0xeead2d,1);
     scene.add(directionalLight)
     directionalLight.position.set(-30,1700,-1300)
     directionalLight.castShadow = true;
-    //const dLightHelp = new THREE.DirectionalLightHelper(directionalLight,500)
-    //scene.add(dLightHelp)
     directionalLight.angle = 1
     directionalLight.shadow.mapSize.width = 2048
     directionalLight.shadow.mapSize.height= 2048
@@ -196,6 +181,7 @@ async function init() {
     directionalLight.shadow.camera.bottom = - d;
     directionalLight.shadow.camera.near = 500;
     directionalLight.shadow.camera.far = 3000;
+
 
     // Water
     const waterGeometry = new THREE.PlaneGeometry(6000, 4000, 3000);
@@ -225,9 +211,6 @@ async function init() {
   
     //Adicionr gaivotas
     gaivotas = new Gaivotas;
-
-    //DICIONAR PEIXES
-    peixes = new Peixes();
 
     //Adicionar farol
     const farol = new Animacoes("assets/lighthouse/scene.gltf",[25, 25,25],[1000,-170,1700],[0,2.8,0]);
@@ -280,6 +263,24 @@ async function init() {
     madeira2.castShadow = true
     madeira3.castShadow = true
 
+
+    // Criar o sol
+    const sunGeometry = new THREE.SphereGeometry(100, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB813 });
+    sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(0, 800, -7000);
+    scene.add(sun);
+
+
+    // Criar a lua
+    const moonGeometry = new THREE.SphereGeometry(140, 32, 32);
+    const moonMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+    moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(0, 0, -7000);
+    scene.add(moon);
+
+
+
     // Nadador salvador e os seus veiculos
     const mota = new Animacoes("assets/mota/scene.gltf",[200,200,200],[2300,10,-150],[-0.1,-1.6,0])
     const casa = new Animacoes("assets/nadador/scene.gltf",[60,70,60],[1900,380,550],[0,-1.5,0])
@@ -289,7 +290,7 @@ async function init() {
 
     // Adicionar Barcos
     boat = new Boat();
-
+    
     //Adicionar lixo
     for(let i = 0; i < Count_trash; i++){
         const trash = await createTrash()
@@ -308,7 +309,6 @@ async function init() {
         Rocks(mesh, [-500, 125, 900], [0, -5,-45.4], 0.6);
         Rocks(mesh, [-500, 135, 1500], [0, -5,-45.4], 0.6);
     });
-
 
     createRocks("assets/rock/scene.gltf");
     
@@ -334,65 +334,8 @@ async function init() {
     sphere.castShadow = true;
     sphere.receiveShadow = true;
 
-    //Rede de voley
-    const group = new THREE.Group();
-    const ferroGeometry = new THREE.CylinderGeometry(15, 15, 500, 90);
-    const ferroMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
-    const ferro = new THREE.Mesh(ferroGeometry, ferroMaterial);
-    ferro.position.set(-1100, 200, 1005);
-    ferro.castShadow = true;
-    ferro.receiveShadow = true;
-    group.add(ferro);
-    const cyl1 = ferro.clone();
-    cyl1.position.set(-1945,200,1010);
-    group.add(cyl1);
 
-    const redeGeometry = new THREE.BoxGeometry(850,200,10,10,10,10);
-    const redeMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, wireframe:true });
-    const rede = new THREE.Mesh(redeGeometry, redeMaterial);
-    rede.position.set(-1520, 350, 1010);
-    rede.castShadow = true;
-    rede.receiveShadow = true;
-    group.add(rede);
-
-    const geo = new THREE.CylinderGeometry(15, 15, 1200, 90);
-    const mat = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
-    const chaorede = new THREE.Mesh(geo, mat);
-    chaorede.position.set(-910, 60, 975);
-    chaorede.castShadow = true;
-    chaorede.rotation.x = 1.52
-    chaorede.rotation.z = -0.03
-    chaorede.castShadow = true;
-    group.add(chaorede);
-
-
-    const chaoredeR = chaorede.clone();
-    chaoredeR.position.set(-2100, 65, 1000);
-    chaoredeR.castShadow = true;
-    chaoredeR.rotation.x = 1.52
-    chaoredeR.rotation.z = -0.05
-    chaoredeR.castShadow = true;
-    group.add(chaoredeR);
-
-    const chaoredeB = chaorede.clone();
-    chaoredeB.position.set(-1535, 35, 400);
-    chaoredeB.castShadow = true;
-    chaoredeB.rotation.x = 1.52
-    chaoredeB.rotation.z = 1.55
-    chaoredeB.castShadow = true;
-    group.add(chaoredeB);
-
-    const chaoredeC = chaorede.clone();
-    chaoredeC.position.set(-1480, 90, 1585);
-    chaoredeC.castShadow = true;
-
-    chaoredeC.rotation.z = 1.55
-    chaoredeC.receiveShadow = true;
-    group.add(chaoredeC);
-
-
-    scene.add(group);
-
+    createRede();
 
     var windbreakerGeometry = new THREE.BoxGeometry(400, 200, 1);
     var windbreakerMaterial = new THREE.MeshStandardMaterial({ 
@@ -442,18 +385,18 @@ async function init() {
     gui.add(options, 'wireframe_ball').onChange(function(e){
         sphere.material.wireframe = e;
     });
-    gui.add(options, 'speed', 0, 0.1);
+    gui.add(options, 'speed', 0.1, 0.5);
     gui.add(options, 'angle', 0, 1);
     gui.add(options, 'penumbra', 0, 1);
     gui.add(options, 'intensity', 0, 1);
-    gui.add(options,'speed_volley',0.01,0.5);
-
-
+    gui.add(options,'speed_volley',0,0.5);
 
     animate();
 }
 
-//Funcoes----------------------------------/////////////////
+
+////////////    FUNCOES  /////////////////
+
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -461,20 +404,46 @@ function onWindowResize() {
 }
 
 
+// Variáveis de controle da animação
+const circleRadius = 3000;
+const ScenerotationSpeed = 0.00025;
+let isDaytime = true;
+
 function animate() {
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate);
     
     boat.update();
     checkColisoes();
 
-    voley.update();
-    gaivotas.update();
-
     step += options.speed;
     sphere.position.y = 110 + 250* Math.abs(Math.sin(step));
 
+    const time = Date.now() * ScenerotationSpeed;
+    sun.position.x = Math.cos(time) * circleRadius;
+    sun.position.y = Math.sin(time) * circleRadius;
+    moon.position.x = Math.cos(time + Math.PI) * circleRadius;
+    moon.position.y = Math.sin(time + Math.PI) * circleRadius;
+
+    // Verificar se é dia ou noite
+    const sunY = sun.position.y;
+    if(sunY >= 0 && !isDaytime){
+        // Aparecer a luz direcional para o dia
+        scene.add(directionalLight);
+        renderer.setClearColor(0xadd8e6);
+        isDaytime = true;
+    }else if(sunY < 0 && isDaytime){
+        // Remover a luz direcional para a noite
+        scene.remove(directionalLight);
+        renderer.setClearColor(0x004f92);
+        isDaytime = false;
+    }
+
+    voley.update();
+    gaivotas.update();
+
     render();
 }
+
 
 function render(){
     water.material.uniforms[ 'time' ].value += 1 / 60.0;
@@ -578,8 +547,66 @@ function passadicos(position,rotationX){
         pa2R.position.set(position[0]+220,450,position[2]-360)
         pa2L.position.set(position[0]-170,450,position[2]-600);
     }
+}
 
-  
+function createRede(){
+    //Rede de voley
+    const group = new THREE.Group();
+    const ferroGeometry = new THREE.CylinderGeometry(15, 15, 500, 90);
+    const ferroMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+    const ferro = new THREE.Mesh(ferroGeometry, ferroMaterial);
+    ferro.position.set(-1100, 200, 1005);
+    ferro.castShadow = true;
+    ferro.receiveShadow = true;
+    group.add(ferro);
+    const cyl1 = ferro.clone();
+    cyl1.position.set(-1945,200,1010);
+    group.add(cyl1);
+
+    const redeGeometry = new THREE.BoxGeometry(850,200,10,10,10,10);
+    const redeMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, wireframe:true });
+    const rede = new THREE.Mesh(redeGeometry, redeMaterial);
+    rede.position.set(-1520, 350, 1010);
+    rede.castShadow = true;
+    rede.receiveShadow = true;
+    group.add(rede);
+
+    const geo = new THREE.CylinderGeometry(15, 15, 1200, 90);
+    const mat = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+    const chaorede = new THREE.Mesh(geo, mat);
+    chaorede.position.set(-910, 60, 975);
+    chaorede.castShadow = true;
+    chaorede.rotation.x = 1.52
+    chaorede.rotation.z = -0.03
+    chaorede.castShadow = true;
+    group.add(chaorede);
+
+
+    const chaoredeR = chaorede.clone();
+    chaoredeR.position.set(-2100, 65, 1000);
+    chaoredeR.castShadow = true;
+    chaoredeR.rotation.x = 1.52
+    chaoredeR.rotation.z = -0.05
+    chaoredeR.castShadow = true;
+    group.add(chaoredeR);
+
+    const chaoredeB = chaorede.clone();
+    chaoredeB.position.set(-1535, 35, 400);
+    chaoredeB.castShadow = true;
+    chaoredeB.rotation.x = 1.52
+    chaoredeB.rotation.z = 1.55
+    chaoredeB.castShadow = true;
+    group.add(chaoredeB);
+
+    const chaoredeC = chaorede.clone();
+    chaoredeC.position.set(-1480, 90, 1585);
+    chaoredeC.castShadow = true;
+
+    chaoredeC.rotation.z = 1.55
+    chaoredeC.receiveShadow = true;
+    group.add(chaoredeC);
+
+    scene.add(group);
 }
 
 function createRocks(url){
