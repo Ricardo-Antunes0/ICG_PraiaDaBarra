@@ -334,7 +334,6 @@ async function init() {
     sphere.castShadow = true;
     sphere.receiveShadow = true;
 
-
     createRede();
 
     var windbreakerGeometry = new THREE.BoxGeometry(400, 200, 1);
@@ -385,7 +384,7 @@ async function init() {
     gui.add(options, 'wireframe_ball').onChange(function(e){
         sphere.material.wireframe = e;
     });
-    gui.add(options, 'speed', 0.1, 0.5);
+    gui.add(options, 'speed', 0, 0.5);
     gui.add(options, 'angle', 0, 1);
     gui.add(options, 'penumbra', 0, 1);
     gui.add(options, 'intensity', 0, 1);
@@ -436,6 +435,32 @@ function animate() {
         scene.remove(directionalLight);
         renderer.setClearColor(0x004f92);
         isDaytime = false;
+
+        /*
+        // Definir a luz do farol
+        const farolLight = new THREE.SpotLight(0xffffff, 1.5, 1000, 0.1, 0.2);
+        const farolPosition = [1000, 1500, 1800];
+
+        // Definir a posição da luz
+        farolLight.position.set(farolPosition[0], farolPosition[1], farolPosition[2]);
+
+        // Definir a direção da luz para apontar para a frente
+        const direction = new THREE.Vector3(0, 0, -1); // Vetor que aponta para a frente
+
+        // Definir o alvo da luz para a direção desejada
+        const farolTarget = new THREE.Object3D();
+        farolTarget.position.set(
+        farolPosition[0] + direction.x,
+        farolPosition[1] + direction.y,
+        farolPosition[2] + direction.z
+        );
+        scene.add(farolTarget);
+        farolLight.target = farolTarget;
+        scene.add(farolLight);
+
+        const spotLightHelper = new THREE.SpotLightHelper(farolLight);
+        scene.add(spotLightHelper);
+        */
     }
 
     voley.update();
@@ -467,6 +492,7 @@ function Animacoes(url,scale,position,rotation){
                 node.receiveShadow = true
             });
     });
+
 }
 
 function passadicos(position,rotationX){
