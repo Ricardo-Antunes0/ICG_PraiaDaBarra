@@ -2,17 +2,12 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import { Water } from 'three/examples/jsm/objects/Water.js';
-import { Sky } from 'three/examples/jsm/objects/Sky.js';
-import waternormal from './assets/waternormals.jpg';
 import * as dat from 'dat.gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Mesh } from 'three';
-import { SpotLightHelper } from 'three';
-
+//import { SpotLightHelper } from 'three';
 
 let camera, scene, renderer;
-let controls, water, gaivotas, sun, moon, directionalLight;
-let boat,voley,cloud;
+let controls, water, gaivotas, sun, moon, directionalLight,boat,voley;
 let step = 0;
 let step1 = 0;
 let sphere;
@@ -36,8 +31,6 @@ const options = {
     speed_volley: 0 
 };
 
-
-
 class Gaivotas{
     constructor(){
         loader.load("assets/gaivotas/scene.gltf", (gltf) =>{
@@ -51,7 +44,7 @@ class Gaivotas{
         });
     }
     update() {
-        if (this.gaivotas){
+        if(this.gaivotas){
             this.gaivotas.getObjectByName('Dummy001').rotation.y += this.gaiv.rota;
         }
         this.gaivotas.traverse(function(node){
@@ -82,16 +75,16 @@ class Boat{
     update() {
         if (this.boat) {
             // Verificar limite de posição em X
-            if (this.boat.position.x >= this.maxX) {
+            if(this.boat.position.x >= this.maxX){
                 this.boat.position.x = this.maxX;
-            } else if (this.boat.position.x <= this.minX) {
+            }else if (this.boat.position.x <= this.minX){
                 this.boat.position.x = this.minX;
             }
 
             // Verificar limite de posição em Z
-            if (this.boat.position.z >= this.maxZ) {
+            if(this.boat.position.z >= this.maxZ) {
                 this.boat.position.z = this.maxZ;
-            } else if (this.boat.position.z <= this.minZ) {
+            }else if (this.boat.position.z <= this.minZ){
                 this.boat.position.z = this.minZ;
             }
 
@@ -99,7 +92,6 @@ class Boat{
             this.boat.translateX(this.speed.vel);
         }
     }
-
     stop(){
         this.speed.rot = 0
         this.speed.vel = 0
@@ -151,14 +143,13 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild( renderer.domElement );
 
-    camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000 );
+    camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000);
     camera.position.set( -5500, 3000, 10000 );
 
     controls = new OrbitControls( camera, renderer.domElement );
     const gui = new dat.GUI();
 
-
-    controls.target.set( 0, 10, 0 );
+    controls.target.set(0, 10, 0);
     controls.minDistance = 500.0;
     controls.maxDistance = 3500.0;
     controls.update();
@@ -167,6 +158,7 @@ async function init() {
     scene.add(ambientLight);   
   
     renderer.setClearColor(0xadd8e6)
+    /*
     directionalLight = new THREE.DirectionalLight(0xeead2d,1);
     scene.add(directionalLight)
     directionalLight.position.set(-30,1700,-1300)
@@ -181,9 +173,25 @@ async function init() {
     directionalLight.shadow.camera.bottom = - d;
     directionalLight.shadow.camera.near = 500;
     directionalLight.shadow.camera.far = 3000;
+    */
+
+       
+    // Definir a luz do sol
+    directionalLight = new THREE.DirectionalLight(0xeead2d, 1.5)
+    directionalLight.castShadow = true;
+    directionalLight.angle = 1
+    directionalLight.shadow.mapSize.width = 2048
+    directionalLight.shadow.mapSize.height= 2048
+    const d = 5000;
+    directionalLight.shadow.camera.left = - d;
+    directionalLight.shadow.camera.right = d;
+    directionalLight.shadow.camera.top = d;
+    directionalLight.shadow.camera.bottom = - d;
+    directionalLight.shadow.camera.near = 500;
+    directionalLight.shadow.camera.far = 6000;
 
 
-    // Water
+    // Criar o oceano
     const waterGeometry = new THREE.PlaneGeometry(6000, 4000, 3000);
     water = new Water(
         waterGeometry,
@@ -209,7 +217,7 @@ async function init() {
     //Adicionar Areia
     const sand = new Animacoes("assets/sand/scene.gltf",[700,200,570],[5050,340,900],[0,1.63,0]);
   
-    //Adicionr gaivotas
+    //Adicionar gaivotas
     gaivotas = new Gaivotas;
 
     //Adicionar farol
@@ -235,6 +243,7 @@ async function init() {
     passadicos([3150,285,1800],1.58);
     passadicos([3170,283,2300],1.58);
 
+    //Criar as ultimas partes do passadiços
     const textureMadeira = new THREE.TextureLoader().load('/assets/madeira.jpg');
     
     const madeira1Geometry = new THREE.BoxGeometry(500,450,50);
@@ -259,39 +268,31 @@ async function init() {
     const madeira3 = madeira2.clone()
     madeira3.position.set(1850,78,2130)
     scene.add(madeira3)
-    madeira1.castShadow = true
-    madeira2.castShadow = true
-    madeira3.castShadow = true
-
 
     // Criar o sol
     const sunGeometry = new THREE.SphereGeometry(100, 32, 32);
     const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB813 });
     sun = new THREE.Mesh(sunGeometry, sunMaterial);
-    sun.position.set(0, 800, -7000);
+    sun.position.set(0, 800, -5000);
     scene.add(sun);
-
 
     // Criar a lua
     const moonGeometry = new THREE.SphereGeometry(140, 32, 32);
     const moonMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
     moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.set(0, 0, -7000);
+    moon.position.set(0, 0, -5000);
     scene.add(moon);
 
-
-
-    // Nadador salvador e os seus veiculos
     const mota = new Animacoes("assets/mota/scene.gltf",[200,200,200],[2300,10,-150],[-0.1,-1.6,0])
     const casa = new Animacoes("assets/nadador/scene.gltf",[60,70,60],[1900,380,550],[0,-1.5,0])
 
-    //Adicionar bola de voley
+    //Adicionar uma bola de voley
     voley = new Voleyball();
 
-    // Adicionar Barcos
+    // Adicionar um barco
     boat = new Boat();
     
-    //Adicionar lixo
+    //Adicionar 10 lixos
     for(let i = 0; i < Count_trash; i++){
         const trash = await createTrash()
         trashes.push(trash)
@@ -334,22 +335,8 @@ async function init() {
     sphere.castShadow = true;
     sphere.receiveShadow = true;
 
+    //Criar a rede e campo de volley
     createRede();
-
-    var windbreakerGeometry = new THREE.BoxGeometry(400, 200, 1);
-    var windbreakerMaterial = new THREE.MeshStandardMaterial({ 
-        color: 0x808080,
-        side: THREE.DoubleSide // enable double-sided rendering
-    });
-    var windbreaker = new THREE.Mesh(windbreakerGeometry, windbreakerMaterial);
-    var windbreaker1 = windbreaker.clone()
-    windbreaker.position.set(150, 120, -400);
-    windbreaker1.position.set(-50, 120, -600);
-    windbreaker1.rotation.y = 1.6
-    scene.add(windbreaker);
-    scene.add(windbreaker1);
-    windbreaker.castShadow = true;
-    windbreaker1.castShadow = true;
 
     window.addEventListener( 'resize', onWindowResize );
 
@@ -390,18 +377,17 @@ async function init() {
     gui.add(options, 'intensity', 0, 1);
     gui.add(options,'speed_volley',0,0.5);
 
+
     animate();
 }
 
 
 ////////////    FUNCOES  /////////////////
-
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
-
 
 // Variáveis de controle da animação
 const circleRadius = 3000;
@@ -423,19 +409,39 @@ function animate() {
     moon.position.x = Math.cos(time + Math.PI) * circleRadius;
     moon.position.y = Math.sin(time + Math.PI) * circleRadius;
 
+    directionalLight.position.set(sun.position.x,sun.position.y,sun.position.z)
+
+    // Definir a direção da luz para apontar para a frente
+    const direction = new THREE.Vector3(0, -0.7, 1); // Vetor que aponta para a frente
+
+    // Definir o alvo da luz para a direção desejada
+    const farolTarget = new THREE.Object3D();
+    farolTarget.position.set(
+        sun.position.x + direction.x,
+        sun.position.y + direction.y,
+        sun.position.z + direction.z
+    );
+    scene.add(farolTarget);
+    directionalLight.target = farolTarget;
+    scene.add(directionalLight);
+
+    
+    const spotLightHelper = new THREE.SpotLightHelper(directionalLight);
+    scene.add(spotLightHelper);
+
+
     // Verificar se é dia ou noite
     const sunY = sun.position.y;
     if(sunY >= 0 && !isDaytime){
         // Aparecer a luz direcional para o dia
-        scene.add(directionalLight);
+        //scene.add(directionalLight);
         renderer.setClearColor(0xadd8e6);
         isDaytime = true;
     }else if(sunY < 0 && isDaytime){
         // Remover a luz direcional para a noite
-        scene.remove(directionalLight);
+        //scene.remove(directionalLight);
         renderer.setClearColor(0x004f92);
         isDaytime = false;
-
         /*
         // Definir a luz do farol
         const farolLight = new THREE.SpotLight(0xffffff, 1.5, 1000, 0.1, 0.2);
@@ -539,34 +545,25 @@ function passadicos(position,rotationX){
     if(position[0] == 3000 ){
         pa2R.rotation.z = -0.08
         pa2L.rotation.z = -0.08
-    }
-    if(position[0] == 3040 ){
+    }if(position[0] == 3040 ){
         pa2R.rotation.z = -0.06
         pa2L.rotation.z = -0.06
-    }
-    
-    if(position[0] == 3060 ){
+    }if(position[0] == 3060 ){
         pa2R.rotation.z = -0.045
         pa2L.rotation.z = -0.045
-    }
-    if(position[0] == 3080 ){
+    }if(position[0] == 3080 ){
         pa2R.rotation.z = -0.05
         pa2L.rotation.z = -0.05
-    }
-    if(position[0] == 3100 ){
+    }if(position[0] == 3100 ){
         pa2R.rotation.z = -0.05
         pa2L.rotation.z = -0.05
-    }
-    if(position[0] == 3120){
+    }if(position[0] == 3120){
         pa2R.rotation.z = -0.05
         pa2L.rotation.z = -0.05
-    }
-    if(position[0] == 3150){
+    }if(position[0] == 3150){
         pa2R.rotation.z = -0.06
         pa2L.rotation.z = -0.06
-    }
-
-    if(position[0] == 3170){
+    }if(position[0] == 3170){
         pa2R.rotation.z = -0.06
         pa2L.rotation.z = -0.06
         pa2R.scale.set(1,1.5,1)
@@ -725,7 +722,6 @@ function checkColisoes(){
     }
 }
 
-//////////////////////////////////////////////////
 const balls = [];
 async function addSunshade(color, x, y, z) {
     const group = new THREE.Group();
@@ -751,10 +747,8 @@ async function addSunshade(color, x, y, z) {
 
     plane.rotation.x = -Math.PI / 2;
  
-    
     if (color === 0xff0000 || color === 0xFFFF00 || color === 0x808080){
-        plane.position.set(x + 150, y-170, z);
-       
+        plane.position.set(x + 150, y-170, z);  
     }
     else{
         plane.position.set(x - 150, y-170, z);
@@ -777,6 +771,20 @@ async function addSunshade(color, x, y, z) {
         scene.add(chinelos)
     }
 
+    var windbreakerGeometry = new THREE.BoxGeometry(400, 200, 1);
+    var windbreakerMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x808080,
+        side: THREE.DoubleSide // enable double-sided rendering
+    });
+    var windbreaker = new THREE.Mesh(windbreakerGeometry, windbreakerMaterial);
+    var windbreaker1 = windbreaker.clone()
+    windbreaker.position.set(150, 120, -400);
+    windbreaker1.position.set(-50, 120, -600);
+    windbreaker1.rotation.y = 1.6
+    scene.add(windbreaker);
+    scene.add(windbreaker1);
+    windbreaker.castShadow = true;
+    windbreaker1.castShadow = true;
 
     const bandeiraG = new THREE.BoxGeometry(150,100,5);
     const bandeiraM = new THREE.MeshStandardMaterial({color: 0x00ff00, side: THREE.DoubleSide})
