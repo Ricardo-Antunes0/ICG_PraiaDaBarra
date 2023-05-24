@@ -15,6 +15,10 @@ let meshes = [];
 let boatModel = null;
 let trashes = [];
 const Count_trash = 10;
+// Definir a direção da luz solar para apontar para a diagonal
+const direction = new THREE.Vector3(0, -0.7, 1);
+
+const minY = 100;
 
 const loader = new GLTFLoader();
 
@@ -144,7 +148,7 @@ async function init() {
     document.body.appendChild( renderer.domElement );
 
     camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000);
-    camera.position.set( -5500, 3000, 10000 );
+    camera.position.set( -6500, 4500, 12000 );
 
     controls = new OrbitControls( camera, renderer.domElement );
     const gui = new dat.GUI();
@@ -157,25 +161,8 @@ async function init() {
     const ambientLight = new THREE.AmbientLight(0x333333);
     scene.add(ambientLight);   
   
-    renderer.setClearColor(0xadd8e6)
-    /*
-    directionalLight = new THREE.DirectionalLight(0xeead2d,1);
-    scene.add(directionalLight)
-    directionalLight.position.set(-30,1700,-1300)
-    directionalLight.castShadow = true;
-    directionalLight.angle = 1
-    directionalLight.shadow.mapSize.width = 2048
-    directionalLight.shadow.mapSize.height= 2048
-    const d = 5000;
-    directionalLight.shadow.camera.left = - d;
-    directionalLight.shadow.camera.right = d;
-    directionalLight.shadow.camera.top = d;
-    directionalLight.shadow.camera.bottom = - d;
-    directionalLight.shadow.camera.near = 500;
-    directionalLight.shadow.camera.far = 3000;
-    */
-
-       
+   // renderer.setClearColor(0xadd8e6)
+    
     // Definir a luz do sol
     directionalLight = new THREE.DirectionalLight(0xeead2d, 1.5)
     directionalLight.castShadow = true;
@@ -411,9 +398,6 @@ function animate() {
 
     directionalLight.position.set(sun.position.x,sun.position.y,sun.position.z)
 
-    // Definir a direção da luz para apontar para a frente
-    const direction = new THREE.Vector3(0, -0.7, 1); // Vetor que aponta para a frente
-
     // Definir o alvo da luz para a direção desejada
     const farolTarget = new THREE.Object3D();
     farolTarget.position.set(
@@ -423,50 +407,19 @@ function animate() {
     );
     scene.add(farolTarget);
     directionalLight.target = farolTarget;
-    scene.add(directionalLight);
-
-    
-    const spotLightHelper = new THREE.SpotLightHelper(directionalLight);
-    scene.add(spotLightHelper);
-
 
     // Verificar se é dia ou noite
     const sunY = sun.position.y;
     if(sunY >= 0 && !isDaytime){
         // Aparecer a luz direcional para o dia
-        //scene.add(directionalLight);
+        scene.add(directionalLight);
         renderer.setClearColor(0xadd8e6);
         isDaytime = true;
     }else if(sunY < 0 && isDaytime){
         // Remover a luz direcional para a noite
-        //scene.remove(directionalLight);
+        scene.remove(directionalLight);
         renderer.setClearColor(0x004f92);
         isDaytime = false;
-        /*
-        // Definir a luz do farol
-        const farolLight = new THREE.SpotLight(0xffffff, 1.5, 1000, 0.1, 0.2);
-        const farolPosition = [1000, 1500, 1800];
-
-        // Definir a posição da luz
-        farolLight.position.set(farolPosition[0], farolPosition[1], farolPosition[2]);
-
-        // Definir a direção da luz para apontar para a frente
-        const direction = new THREE.Vector3(0, 0, -1); // Vetor que aponta para a frente
-
-        // Definir o alvo da luz para a direção desejada
-        const farolTarget = new THREE.Object3D();
-        farolTarget.position.set(
-        farolPosition[0] + direction.x,
-        farolPosition[1] + direction.y,
-        farolPosition[2] + direction.z
-        );
-        scene.add(farolTarget);
-        farolLight.target = farolTarget;
-        scene.add(farolLight);
-
-        const spotLightHelper = new THREE.SpotLightHelper(farolLight);
-        scene.add(spotLightHelper);
-        */
     }
 
     voley.update();
@@ -478,6 +431,12 @@ function animate() {
 
 function render(){
     water.material.uniforms[ 'time' ].value += 1 / 60.0;
+
+    // Verifique se a posição y da câmera está abaixo do limite mínimo
+    if (camera.position.y < minY) {
+        camera.position.y = minY; // Defina a posição y da câmera para o limite mínimo
+    }
+
     renderer.render( scene, camera );
 }
 
@@ -575,21 +534,21 @@ function passadicos(position,rotationX){
 function createRede(){
     //Rede de voley
     const group = new THREE.Group();
-    const ferroGeometry = new THREE.CylinderGeometry(15, 15, 500, 90);
+    const ferroGeometry = new THREE.CylinderGeometry(15, 15, 400, 90);
     const ferroMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
     const ferro = new THREE.Mesh(ferroGeometry, ferroMaterial);
-    ferro.position.set(-1100, 200, 1005);
+    ferro.position.set(-1100, 300, 1005);
     ferro.castShadow = true;
     ferro.receiveShadow = true;
     group.add(ferro);
     const cyl1 = ferro.clone();
-    cyl1.position.set(-1945,200,1010);
+    cyl1.position.set(-1945,300,1010);
     group.add(cyl1);
 
     const redeGeometry = new THREE.BoxGeometry(850,200,10,10,10,10);
     const redeMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, wireframe:true });
     const rede = new THREE.Mesh(redeGeometry, redeMaterial);
-    rede.position.set(-1520, 350, 1010);
+    rede.position.set(-1520, 400,1010);
     rede.castShadow = true;
     rede.receiveShadow = true;
     group.add(rede);
