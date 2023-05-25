@@ -1,15 +1,15 @@
-
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import { Water } from 'three/examples/jsm/objects/Water.js';
 import * as dat from 'dat.gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-//import { SpotLightHelper } from 'three';
+import sky from '/assets/image.png';
+import skyNoite from '/assets/noite1.jpg';
 
 let camera, scene, renderer;
-let controls, water, gaivotas, sun, moon, directionalLight,boat,voley;
-let step = 0;
-let step1 = 0;
+let controls, water, gaivotas, sun, moon,boat,voley; 
+let directionalLight,spotLight;
+let step = 0, step1 = 0;
 let sphere;
 let meshes = [];
 let boatModel = null;
@@ -17,9 +17,9 @@ let trashes = [];
 const Count_trash = 10;
 // Definir a direção da luz solar para apontar para a diagonal
 const direction = new THREE.Vector3(0, -0.7, 1);
-
+//Valor minimo em y`` que a camara pode ir
 const minY = 100;
-
+const textureLoader = new THREE.TextureLoader();
 const loader = new GLTFLoader();
 
 const options = {
@@ -147,8 +147,8 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild( renderer.domElement );
 
-    camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000);
-    camera.position.set( -6500, 4500, 12000 );
+    camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 20000);
+    camera.position.set(-6500, 4500, 12000);
 
     controls = new OrbitControls( camera, renderer.domElement );
     const gui = new dat.GUI();
@@ -157,12 +157,10 @@ async function init() {
     controls.minDistance = 500.0;
     controls.maxDistance = 3500.0;
     controls.update();
- 
+    
     const ambientLight = new THREE.AmbientLight(0x333333);
     scene.add(ambientLight);   
   
-   // renderer.setClearColor(0xadd8e6)
-    
     // Definir a luz do sol
     directionalLight = new THREE.DirectionalLight(0xeead2d, 1.5)
     directionalLight.castShadow = true;
@@ -177,6 +175,31 @@ async function init() {
     directionalLight.shadow.camera.near = 500;
     directionalLight.shadow.camera.far = 6000;
 
+    //Definir a luz para a lua
+    spotLight = new THREE.SpotLight(0xffffff,3,8000,1,0.2);
+    spotLight.castShadow = true;
+    spotLight.shadow.mapSize.width = 2048;
+    spotLight.shadow.mapSize.height= 2048;
+    spotLight.shadow.camera.left = - d;
+    spotLight.shadow.camera.right = d;
+    spotLight.shadow.camera.top = d;
+    spotLight.shadow.camera.bottom = - d;
+    spotLight.shadow.camera.near = 500;
+    spotLight.shadow.camera.far = 6000;
+    
+    // Criar o sol
+    const sunGeometry = new THREE.SphereGeometry(100, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB813 });
+    sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(0, 800, -5000);
+    scene.add(sun);
+
+    // Criar a lua
+    const moonGeometry = new THREE.SphereGeometry(140, 32, 32);
+    const moonMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+    moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.set(0, 0, -5000);
+    scene.add(moon);
 
     // Criar o oceano
     const waterGeometry = new THREE.PlaneGeometry(6000, 4000, 3000);
@@ -185,7 +208,7 @@ async function init() {
         {
             textureWidth: 512,
             textureHeight: 512,
-            waterNormals: new THREE.TextureLoader().load('./assets/waternormals.jpg', function ( texture ) {
+            waterNormals: textureLoader.load('./assets/waternormals.jpg', function ( texture ) {
                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
             } ),
             sunDirection: new THREE.Vector3(),
@@ -220,6 +243,9 @@ async function init() {
     const prancha = new Animacoes("assets/prancha/scene.gltf",[70,70,70], [-700,330,2150],[-15, 25.2,-10.80]);
     const pranchaL = new Animacoes("assets/prancha/scene.gltf",[70,70,70], [-800,330,2150],[-15, 25.2,-10.4]);
 
+    const mota = new Animacoes("assets/mota/scene.gltf",[200,200,200],[2300,10,-150],[-0.1,-1.6,0])
+    const casa = new Animacoes("assets/nadador/scene.gltf",[60,70,60],[1900,380,550],[0,-1.5,0])
+
     //Adicionar passadiços
     passadicos([3000,323.5,-1200],1.58);
     passadicos([3040,314.5,-700],1.58);
@@ -229,49 +255,6 @@ async function init() {
     passadicos([3120,285,1300],1.58);
     passadicos([3150,285,1800],1.58);
     passadicos([3170,283,2300],1.58);
-
-    //Criar as ultimas partes do passadiços
-    const textureMadeira = new THREE.TextureLoader().load('/assets/madeira.jpg');
-    
-    const madeira1Geometry = new THREE.BoxGeometry(500,450,50);
-    const madeira1Material = new THREE.MeshStandardMaterial({ map: textureMadeira, side: THREE.DoubleSide })
-    const madeira1 = new THREE.Mesh(madeira1Geometry,madeira1Material)
-    
-    madeira1.rotation.z= -1.515
-    madeira1.rotation.y= -0.5
-    madeira1.rotation.x= -1.52
-
-    madeira1.position.set(2775,180,2080)
-    scene.add(madeira1)
-
-    const madeira2Geometry = new THREE.BoxGeometry(500,750,50);   
-    const madeira2 = new THREE.Mesh(madeira2Geometry,madeira1Material)   
-    madeira2.rotation.z= -1.515
-    madeira2.rotation.y= -0.02
-    madeira2.rotation.x= -1.55
-    madeira2.position.set(2225,85,2110)
-    scene.add(madeira2)
-
-    const madeira3 = madeira2.clone()
-    madeira3.position.set(1850,78,2130)
-    scene.add(madeira3)
-
-    // Criar o sol
-    const sunGeometry = new THREE.SphereGeometry(100, 32, 32);
-    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB813 });
-    sun = new THREE.Mesh(sunGeometry, sunMaterial);
-    sun.position.set(0, 800, -5000);
-    scene.add(sun);
-
-    // Criar a lua
-    const moonGeometry = new THREE.SphereGeometry(140, 32, 32);
-    const moonMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
-    moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.set(0, 0, -5000);
-    scene.add(moon);
-
-    const mota = new Animacoes("assets/mota/scene.gltf",[200,200,200],[2300,10,-150],[-0.1,-1.6,0])
-    const casa = new Animacoes("assets/nadador/scene.gltf",[60,70,60],[1900,380,550],[0,-1.5,0])
 
     //Adicionar uma bola de voley
     voley = new Voleyball();
@@ -298,6 +281,7 @@ async function init() {
         Rocks(mesh, [-500, 135, 1500], [0, -5,-45.4], 0.6);
     });
 
+    //Criar as rochas
     createRocks("assets/rock/scene.gltf");
     
     addSunshade(0xff00ff, 50, 200, 0) // pink
@@ -329,10 +313,10 @@ async function init() {
 
     window.addEventListener('keydown', function(e){
        if(e.key == "ArrowUp"){
-        boat.speed.vel = 13
+        boat.speed.vel = 16
        }
        if(e.key == "ArrowDown"){
-        boat.speed.vel = -13
+        boat.speed.vel = -16
        }
        if(e.key == "ArrowLeft"){
         boat.speed.rot = 0.05
@@ -387,56 +371,51 @@ function animate() {
     boat.update();
     checkColisoes();
 
+    voley.update();
+    gaivotas.update();
+
+    //Velocidade da bola
     step += options.speed;
     sphere.position.y = 110 + 250* Math.abs(Math.sin(step));
 
+    //Atualizações das posições do sol e da lua
     const time = Date.now() * ScenerotationSpeed;
     sun.position.x = Math.cos(time) * circleRadius;
     sun.position.y = Math.sin(time) * circleRadius;
     moon.position.x = Math.cos(time + Math.PI) * circleRadius;
     moon.position.y = Math.sin(time + Math.PI) * circleRadius;
 
-    directionalLight.position.set(sun.position.x,sun.position.y,sun.position.z)
+    //Definir as luzes nas meshes
+    directionalLight.position.set(sun.position.x,sun.position.y,sun.position.z);
+    spotLight.position.set(moon.position.x,moon.position.y,moon.position.z);
+    
+    //Definir as posicoes para onde as luzes vão apontar
+    target();
 
-    // Definir o alvo da luz para a direção desejada
-    const farolTarget = new THREE.Object3D();
-    farolTarget.position.set(
-        sun.position.x + direction.x,
-        sun.position.y + direction.y,
-        sun.position.z + direction.z
-    );
-    scene.add(farolTarget);
-    directionalLight.target = farolTarget;
-
-    // Verificar se é dia ou noite
+    //Verificar se é dia ou noite
     const sunY = sun.position.y;
     if(sunY >= 0 && !isDaytime){
         // Aparecer a luz direcional para o dia
         scene.add(directionalLight);
+        scene.remove(spotLight);
         renderer.setClearColor(0xadd8e6);
+        scene.background = textureLoader.load(sky);
         isDaytime = true;
     }else if(sunY < 0 && isDaytime){
         // Remover a luz direcional para a noite
         scene.remove(directionalLight);
-        renderer.setClearColor(0x004f92);
+        scene.add(spotLight);
+        scene.background = textureLoader.load(skyNoite);
+        //renderer.setClearColor(0x00008b);
         isDaytime = false;
     }
-
-    voley.update();
-    gaivotas.update();
-
     render();
 }
 
-
 function render(){
     water.material.uniforms[ 'time' ].value += 1 / 60.0;
-
-    // Verifique se a posição y da câmera está abaixo do limite mínimo
-    if (camera.position.y < minY) {
-        camera.position.y = minY; // Defina a posição y da câmera para o limite mínimo
-    }
-
+    //Verifique se a posição y da câmera está abaixo do limite mínimo
+    if (camera.position.y < minY)   camera.position.y = minY;//Definir o y`` da câmara para o limite mínimo
     renderer.render( scene, camera );
 }
 
@@ -457,11 +436,32 @@ function Animacoes(url,scale,position,rotation){
                 node.receiveShadow = true
             });
     });
-
 }
 
+  // Definir os alvos da directionalLight e spotLight para a direção desejada
+function target(){
+    const sunTarget = new THREE.Object3D();
+    const moonTarget = new THREE.Object3D();
+    sunTarget.position.set(
+        sun.position.x + direction.x,
+        sun.position.y + direction.y,
+        sun.position.z + direction.z
+    );
+
+    moonTarget.position.set(
+        moon.position.x + direction.x,
+        moon.position.y + direction.y,
+        moon.position.z + direction.z
+    );
+
+    scene.add(sunTarget);
+    scene.add(moonTarget);
+    directionalLight.target = sunTarget;
+    spotLight.target = moonTarget;
+}
+
+// Criar os passadiços
 function passadicos(position,rotationX){
-    
     const textureMadeira = new THREE.TextureLoader().load('/assets/madeira.jpg');
     const madeiraGeometry = new THREE.BoxGeometry(450,500,50);
     const madeiraMaterial = new THREE.MeshStandardMaterial({ map: textureMadeira, side: THREE.DoubleSide })
@@ -529,10 +529,37 @@ function passadicos(position,rotationX){
         pa2R.position.set(position[0]+220,450,position[2]-360)
         pa2L.position.set(position[0]-170,450,position[2]-600);
     }
+
+    //Criar as últimas partes do passadiços
+    if(position[0] ==3170 && position[1]==283 && position[2]==2300){
+        const textureMadeira = new THREE.TextureLoader().load('/assets/madeira.jpg');
+        const madeira1Geometry = new THREE.BoxGeometry(500,450,50);
+        const madeira1Material = new THREE.MeshStandardMaterial({ map: textureMadeira, side: THREE.DoubleSide })
+        const madeira1 = new THREE.Mesh(madeira1Geometry,madeira1Material)
+        
+        madeira1.rotation.z= -1.515
+        madeira1.rotation.y= -0.5
+        madeira1.rotation.x= -1.52
+
+        madeira1.position.set(2775,180,2080)
+        scene.add(madeira1)
+
+        const madeira2Geometry = new THREE.BoxGeometry(500,750,50);   
+        const madeira2 = new THREE.Mesh(madeira2Geometry,madeira1Material)   
+        madeira2.rotation.z= -1.515
+        madeira2.rotation.y= -0.02
+        madeira2.rotation.x= -1.55
+        madeira2.position.set(2225,85,2110)
+        scene.add(madeira2)
+
+        const madeira3 = madeira2.clone()
+        madeira3.position.set(1850,78,2130)
+        scene.add(madeira3)
+    }
 }
 
+//Campo e rede de volley
 function createRede(){
-    //Rede de voley
     const group = new THREE.Group();
     const ferroGeometry = new THREE.CylinderGeometry(15, 15, 400, 90);
     const ferroMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
@@ -591,33 +618,33 @@ function createRede(){
     scene.add(group);
 }
 
+//ADICIONAR PEDRAS
 function createRocks(url){
-        //ADICIONAR PEDRAS
-        loader.load( url, function( gltf ) {
-            const mesh = gltf.scene.children[0];
-        
-            mesh.material = new THREE.MeshPhongMaterial({
-              flatShading: true,
-              color: 0x7787aa,
-              shininess: 0,
-            });
-        
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-        
-            Rocks(mesh, [2850, 20, -2000], [0, 55, 180], 50);
-            Rocks(mesh, [2900, 20, -2500], [0, 55, 180], 90);
-            Rocks(mesh, [2800, 20, -2900], [0, 55, 180], 60);
-            Rocks(mesh, [2800, 20, -3600], [0, -52, 180], 50);
-            Rocks(mesh, [2800, 20, -4100], [0, 5, 180], 70);
-            Rocks(mesh, [3000, 20, -3200], [0, 55, 180], 80);
-            Rocks(mesh, [2750, 20, -3200], [0, 55, 180], 60);
-            Rocks(mesh, [2500, 20, -3300], [0, -51, 180], 60);
-            Rocks(mesh, [2700, 20, -5300], [0, 5, 180], 50);
-            Rocks(mesh, [2900, 20, -4500], [0, 55, 180], 80);
-            Rocks(mesh, [2700, 20, -5100], [0, 0, 180], 60);
-
+    loader.load( url, function( gltf ) {
+        const mesh = gltf.scene.children[0];
+    
+        mesh.material = new THREE.MeshPhongMaterial({
+            flatShading: true,
+            color: 0x7787aa,
+            shininess: 0,
         });
+    
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+    
+        Rocks(mesh, [2850, 20, -2000], [0, 55, 180], 50);
+        Rocks(mesh, [2900, 20, -2500], [0, 55, 180], 90);
+        Rocks(mesh, [2800, 20, -2900], [0, 55, 180], 60);
+        Rocks(mesh, [2800, 20, -3600], [0, -52, 180], 50);
+        Rocks(mesh, [2800, 20, -4100], [0, 5, 180], 70);
+        Rocks(mesh, [3000, 20, -3200], [0, 55, 180], 80);
+        Rocks(mesh, [2750, 20, -3200], [0, 55, 180], 60);
+        Rocks(mesh, [2500, 20, -3300], [0, -51, 180], 60);
+        Rocks(mesh, [2700, 20, -5300], [0, 5, 180], 50);
+        Rocks(mesh, [2900, 20, -4500], [0, 55, 180], 80);
+        Rocks(mesh, [2700, 20, -5100], [0, 0, 180], 60);
+
+    });
 }
 
 function Rocks(mesh, position, rotation, scale) {
@@ -649,13 +676,14 @@ function random(min,max){
 }
 
 
-//////////// Funções para criar vários lixos, detetar colisões e remover o lixo ao colidir
+//////////// Função para criar vários lixos
 async function createTrash(){
     if(!boatModel){
         boatModel = await loadModel("assets/trash/scene.gltf")
     } return new Trash(boatModel.clone())
 }
 
+//Função para detetar colisões
 function colisao(obj1,obj2){
     return(
         Math.abs(obj1.position.x - obj2.position.x) < 150 && 
@@ -663,22 +691,23 @@ function colisao(obj1,obj2){
     )
 }
 
+// Função para remover o lixo ao colidir
+function checkColisoes(){
+    if(boat.boat){
+        trashes.forEach(trash => {
+            if(trash.trash && colisao(boat.boat,trash.trash)){   
+                scene.remove(trash.trash);
+            }
+        })
+    }
+}
+
+//Função para returnar modelos gltf
 async function loadModel(url){
     return new Promise((resolve,reject) => {
         loader.load(url, (gltf) =>{
             resolve(gltf.scene)
         }) })
-}
-
-function checkColisoes(){
-    if(boat.boat){
-        trashes.forEach(trash => {
-            if(trash.trash && colisao(boat.boat,trash.trash)){
-                
-                scene.remove(trash.trash);
-            }
-        })
-    }
 }
 
 const balls = [];
@@ -708,26 +737,11 @@ async function addSunshade(color, x, y, z) {
  
     if (color === 0xff0000 || color === 0xFFFF00 || color === 0x808080){
         plane.position.set(x + 150, y-170, z);  
-    }
-    else{
+    }else{
         plane.position.set(x - 150, y-170, z);
-        const chair = await loadModel("assets/chair/scene.gltf")
-        chair.scale.set(0.5,0.5,0.5)
-        chair.position.set(x+210,y-45,z-20)
-        chair.rotation.y = random(0.8, 2)
-        chair.castShadow = true
-        scene.add(chair)
-
-        const ball = await loadModel("assets/ball/scene.gltf")
-        ball.scale.set(45,45,45)
-        ball.position.set(x-100,y-125,random(z-150,z+200))
-        ball.castShadow = true
-        scene.add(ball)
-
-        const chinelos = await loadModel("assets/chinelos/scene.gltf") 
-        chinelos.scale.set(0.2,0.2,0.2)
-        chinelos.position.set(x+30,y-160,random(z-300,z+50))
-        scene.add(chinelos)
+        const chair = new Animacoes("assets/chair/scene.gltf",[0.5,0.5,0.5],[x+210,y-45,z-20],[0,random(0.8, 2),0]);
+        const ball = new Animacoes("assets/ball/scene.gltf",[45,45,45],[x-100,y-125,random(z-150,z+200)],[0,0,0]);
+        const chinelos = new Animacoes("assets/chinelos/scene.gltf",[0.2,0.2,0.2],[x+30,y-160,random(z-300,z+50)],[0,0,0]);
     }
 
     var windbreakerGeometry = new THREE.BoxGeometry(400, 200, 1);
