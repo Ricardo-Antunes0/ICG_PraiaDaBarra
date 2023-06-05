@@ -12,11 +12,6 @@ html,body {
   align-items: center;
 }
 
-.container-right {
-    display: flex;
-    justify-content: right;
-    align-items: center;
-}
 .box {
   background: white;
   padding: 5px;
@@ -24,7 +19,7 @@ html,body {
   border-radius: 10px;
 }
 #in {
-  font-size: .80em;
+  font-size: .85em;
   position: absolute;
   top: 20px;
   text-align: center;

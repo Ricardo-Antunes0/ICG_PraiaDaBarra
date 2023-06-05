@@ -3,24 +3,32 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import { Water } from 'three/examples/jsm/objects/Water.js';
 import * as dat from 'dat.gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import sky from '/assets/image.png';
-import skyNoite from '/assets/noite1.jpg';
+import sky from '/assets/dia.png';
+import skyNoite from '/assets/noite.jpg';
 
-let camera, scene, renderer;
-let controls, water, gaivotas, sun, moon,boat,voley; 
+
+let camera, cameraFarol, scene, renderer,controls;
+let water, gaivotas, farol, sun, moon, boat, voley, aviao, stick,pub, sphere;
 let directionalLight,spotLight;
 let step = 0, step1 = 0;
-let sphere;
-let meshes = [];
+let boatView = false;
+let farolView = false;
+let meshes = [], trashes = [];;
 let boatModel = null;
-let trashes = [];
 const Count_trash = 10;
-// Definir a direção da luz solar para apontar para a diagonal
+
+// Definir a direção da luz solar para apontar para o plano e seguir o seu movimento
 const direction = new THREE.Vector3(0, -0.7, 1);
-//Valor minimo em y`` que a camara pode ir
+
+//Valor minimo em y`` que a câmara pode ir
 const minY = 100;
 const textureLoader = new THREE.TextureLoader();
 const loader = new GLTFLoader();
+
+//variável de estado para controlar o sentido do movimento do avião
+let movingForward = true;
+
+let activeCamera;
 
 const options = {
     sphereColor: '#ffea00',
@@ -29,34 +37,8 @@ const options = {
     voleyColor2: '#ffea00',
     wireframe_ball: false,
     speed: 0,
-    angle: 0.2,
-    penumbra: 0,
-    intensity: 1,
     speed_volley: 0 
 };
-
-class Gaivotas{
-    constructor(){
-        loader.load("assets/gaivotas/scene.gltf", (gltf) =>{
-            scene.add(gltf.scene)
-            gltf.scene.scale.set(80, 80,80)
-            gltf.scene.position.set(-1000,450,-3500)
-            this.gaivotas = gltf.scene
-            this.gaiv = {
-                rota: 0.02,
-            }
-        });
-    }
-    update() {
-        if(this.gaivotas){
-            this.gaivotas.getObjectByName('Dummy001').rotation.y += this.gaiv.rota;
-        }
-        this.gaivotas.traverse(function(node){
-            if(node.isMesh)
-                node.castShadow = true
-            });
-    }      
-}
 
 class Boat{
     constructor(){
@@ -94,6 +76,15 @@ class Boat{
 
             this.boat.rotation.y += this.speed.rot;
             this.boat.translateX(this.speed.vel);
+
+            controls.update();
+            
+            if (boatView) {
+                const cameraPosition = new THREE.Vector3(-500, 800, -2000);
+                const cameraTarget = this.boat.position.clone();
+                camera.position.copy(cameraPosition);
+                camera.lookAt(cameraTarget);
+            }
         }
     }
     stop(){
@@ -109,6 +100,121 @@ class Trash{
         _scene.position.set(random(-2500,2000),-20,random(-4500,-1700))    
         this.trash = _scene    
     }
+}
+
+class Aviao{
+    constructor(){
+        loader.load("assets/aviao/scene.gltf", (gltf) =>{
+            scene.add(gltf.scene)
+            gltf.scene.scale.set(110,110,105)
+            gltf.scene.position.set(12500,3200,-5000)
+            this.aviao = gltf.scene
+
+
+            const pubTexture = new THREE.TextureLoader().load('./assets/deti.png');
+            pub = new THREE.Mesh(
+                new THREE.BoxGeometry(1000,400,4),
+                new THREE.MeshBasicMaterial({ 
+                    map: pubTexture,
+                }) 
+             );
+            pub.position.set(13700,3200,-5000)
+            scene.add(pub)
+
+            const stickGeometry = new THREE.CylinderGeometry(5, 5, 400, 90);
+            const stickMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
+            stick = new THREE.Mesh(stickGeometry, stickMaterial);
+            stick.position.set(13000, 3200, -5000);
+            stick.rotation.z = 1.6;
+            stick.castShadow = true;
+            stick.receiveShadow = true;
+            scene.add(stick);
+        });
+
+    }
+    update(){  
+        if (this.aviao) {
+            if(movingForward){
+                // Movimento para a frente (x diminui)
+                this.aviao.translateX(-20);
+                pub.position.x -= 20;
+                stick.position.x -= 20;
+                if (this.aviao.position.x <= -10000) {
+                    movingForward = false;
+                    // Inverte a ordem dos elementos
+                    const tempPositionX = pub.position.x;
+                    pub.position.x = this.aviao.position.x - 150;
+                    this.aviao.position.x = tempPositionX - 30;   
+                    this.aviao.rotation.y = Math.PI;
+                }
+            }else{
+                // Movimento de volta (x aumenta)
+                this.aviao.translateX(-20);
+                pub.position.x += 20;
+                stick.position.x += 20;
+             
+                if (this.aviao.position.x >= 12950){
+                    movingForward = true;
+                    // Inverte a ordem dos elementos
+                    const tempPositionX = pub.position.x;
+                    pub.position.x = this.aviao.position.x;
+                    this.aviao.position.x = tempPositionX;
+                    this.aviao.rotation.y -= Math.PI;
+                }
+            }
+            if (this.aviao.position.x <= 5000 && this.aviao.position.x >= 1000) {
+                if(movingForward == true){
+                    this.aviao.position.y -= 7;
+                    pub.position.y -= 7;
+                    stick.position.y -= 7;
+                }
+                else{
+                    this.aviao.position.y += 7;
+                    pub.position.y += 7;
+                    stick.position.y += 7;
+                }
+              } else if (this.aviao.position.x <= 1000 && this.aviao.position.x >= -3000) {
+                    if(movingForward == true){
+                        this.aviao.position.y += 7;
+                        pub.position.y += 7;
+                        stick.position.y += 7;
+                    }
+                    else{
+                        this.aviao.position.y -= 7;
+                        pub.position.y -= 7;
+                        stick.position.y -= 7;
+                    }
+              } else {
+                    this.aviao.position.y = 3190;
+                    pub.position.y = 3200;
+                    stick.position.y = 3200;
+                }
+               
+            }
+        }
+    }
+
+class Gaivotas{
+    constructor(){
+        loader.load("assets/gaivotas/scene.gltf", (gltf) =>{
+            scene.add(gltf.scene)
+            gltf.scene.scale.set(80, 80,80)
+            gltf.scene.position.set(-1000,350,-3500)
+            this.gaivotas = gltf.scene
+            this.gaiv = {
+                rota: 0.02,
+            }
+        });
+    }
+    update() {
+        if(this.gaivotas){
+            this.gaivotas.getObjectByName('Dummy001').rotation.y += this.gaiv.rota;
+        }
+        this.gaivotas.traverse(function(node){
+            if(node.isMesh)
+                node.castShadow = true
+            });
+    }      
 }
 
 class Voleyball{
@@ -147,8 +253,18 @@ async function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     document.body.appendChild( renderer.domElement );
 
+
     camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 20000);
     camera.position.set(-6500, 4500, 12000);
+
+    cameraFarol = new THREE.PerspectiveCamera(95,window.innerWidth / window.innerHeight,1,20000);
+    cameraFarol.position.set(1000,1000,1700);
+    cameraFarol.lookAt(scene.position);
+
+    activeCamera = camera;
+
+    scene.add(camera);
+    scene.add(cameraFarol);
 
     controls = new OrbitControls( camera, renderer.domElement );
     const gui = new dat.GUI();
@@ -162,7 +278,7 @@ async function init() {
     scene.add(ambientLight);   
   
     // Definir a luz do sol
-    directionalLight = new THREE.DirectionalLight(0xeead2d, 1.5)
+    directionalLight = new THREE.DirectionalLight(0xeead2d, 1.1)
     directionalLight.castShadow = true;
     directionalLight.angle = 1
     directionalLight.shadow.mapSize.width = 2048
@@ -173,10 +289,10 @@ async function init() {
     directionalLight.shadow.camera.top = d;
     directionalLight.shadow.camera.bottom = - d;
     directionalLight.shadow.camera.near = 500;
-    directionalLight.shadow.camera.far = 6000;
+    directionalLight.shadow.camera.far = 8000;
 
-    //Definir a luz para a lua
-    spotLight = new THREE.SpotLight(0xffffff,3,8000,1,0.2);
+    //Definir a luz da lua
+    spotLight = new THREE.SpotLight(0xffffff,6,9000,1,0.2);
     spotLight.castShadow = true;
     spotLight.shadow.mapSize.width = 2048;
     spotLight.shadow.mapSize.height= 2048;
@@ -185,20 +301,32 @@ async function init() {
     spotLight.shadow.camera.top = d;
     spotLight.shadow.camera.bottom = - d;
     spotLight.shadow.camera.near = 500;
-    spotLight.shadow.camera.far = 6000;
+    spotLight.shadow.camera.far = 8000;
     
     // Criar o sol
-    const sunGeometry = new THREE.SphereGeometry(100, 32, 32);
-    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFDB813 });
-    sun = new THREE.Mesh(sunGeometry, sunMaterial);
-    sun.position.set(0, 800, -5000);
+    const sunTexture = new THREE.TextureLoader().load('./assets/sun.jpg');
+    const normalTexture = new THREE.TextureLoader().load('./assets/normal.jpg');
+    sun = new THREE.Mesh(
+        new THREE.SphereGeometry(140, 32, 32),
+        new THREE.MeshBasicMaterial({ 
+            map: sunTexture,
+            normalMap: normalTexture
+        })
+    );
+    sun.position.set(0, 0, -7000);
     scene.add(sun);
 
+
     // Criar a lua
-    const moonGeometry = new THREE.SphereGeometry(140, 32, 32);
-    const moonMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
-    moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.set(0, 0, -5000);
+    const moonTexture = new THREE.TextureLoader().load('./assets/moon.jpg');
+    moon = new THREE.Mesh(
+        new THREE.SphereGeometry(140, 32, 32),
+        new THREE.MeshBasicMaterial({ 
+            map: moonTexture,
+            normalMap: normalTexture
+        })
+    );
+    moon.position.set(0, 0, -7000);
     scene.add(moon);
 
     // Criar o oceano
@@ -228,23 +356,37 @@ async function init() {
     const sand = new Animacoes("assets/sand/scene.gltf",[700,200,570],[5050,340,900],[0,1.63,0]);
   
     //Adicionar gaivotas
-    gaivotas = new Gaivotas;
+    gaivotas = new Gaivotas();
 
     //Adicionar farol
-    const farol = new Animacoes("assets/lighthouse/scene.gltf",[25, 25,25],[1000,-170,1700],[0,2.8,0]);
-
+    farol = new Animacoes("assets/lighthouse/scene.gltf",[25, 25,25],[1000,-170,1700],[0,2.8,0]);
+    
     //Adicionar bar
-    const bar = new Animacoes("assets/bar/scene.gltf",[130, 150,130],[-300,130,2300],[0,0.05,0]);
+    const bar = new Animacoes("assets/bar/scene.gltf",[140, 150,140],[-1200,130,2300],[0,0.05,0]);
 
-    //Adicinar carro de gelado
-    const gelados = new Animacoes("assets/gelados/scene.gltf",[0.5, 0.5,0.5],[150,200,2400],[0,-1.63,0]);
+    //Adicionar mesas e bancos
+    const table = new Animacoes("assets/table/scene.gltf",[140, 150,140],[-400,170,2400],[0,0.05,0]);
+
+    //Adicionar sombrilha1
+    const sombrilha = new Animacoes("assets/sombrilha/scene.gltf",[200, 200,200],[-400,150,2250],[0,0.05,0]);
 
     //Adicionar prancha
-    const prancha = new Animacoes("assets/prancha/scene.gltf",[70,70,70], [-700,330,2150],[-15, 25.2,-10.80]);
-    const pranchaL = new Animacoes("assets/prancha/scene.gltf",[70,70,70], [-800,330,2150],[-15, 25.2,-10.4]);
+    const prancha = new Animacoes("assets/prancha/scene.gltf",[80,80,80], [-1600,350,2150],[-15, 25.2,-10.80]);
+    const pranchaL = new Animacoes("assets/prancha/scene.gltf",[80,80,80], [-1700,350,2150],[-15, 25.2,-10.4]);
 
     const mota = new Animacoes("assets/mota/scene.gltf",[200,200,200],[2300,10,-150],[-0.1,-1.6,0])
+
+    // Edificio do nadador salvador
     const casa = new Animacoes("assets/nadador/scene.gltf",[60,70,60],[1900,380,550],[0,-1.5,0])
+
+    //Adicionar uma bola de voley
+    voley = new Voleyball();
+
+    // Adicionar um barco
+    boat = new Boat();
+    
+    //Criar aviao
+    aviao = new Aviao();
 
     //Adicionar passadiços
     passadicos([3000,323.5,-1200],1.58);
@@ -256,34 +398,16 @@ async function init() {
     passadicos([3150,285,1800],1.58);
     passadicos([3170,283,2300],1.58);
 
-    //Adicionar uma bola de voley
-    voley = new Voleyball();
-
-    // Adicionar um barco
-    boat = new Boat();
-    
     //Adicionar 10 lixos
     for(let i = 0; i < Count_trash; i++){
         const trash = await createTrash()
         trashes.push(trash)
     }
 
-    //Adicionar chinelos
-    loader.load( 'assets/chinelo/scene.gltf', function( gltf ) {
-        const mesh = gltf.scene.children[0];
-        
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-    
-        Rocks(mesh, [300, 125, 900], [0, 5,-45.4], 0.6);
-        Rocks(mesh, [300, 135, 1500], [0, 5,-45.4], 0.6);
-        Rocks(mesh, [-500, 125, 900], [0, -5,-45.4], 0.6);
-        Rocks(mesh, [-500, 135, 1500], [0, -5,-45.4], 0.6);
-    });
-
     //Criar as rochas
     createRocks("assets/rock/scene.gltf");
     
+    //Adicionar os items necessarios para a praia
     addSunshade(0xff00ff, 50, 200, 0) // pink
     addSunshade(0xff00ff, -500, 200, -100) // pink
     addSunshade(0x0000FF,-1100, 205, 0) // blue
@@ -295,34 +419,42 @@ async function init() {
     addSunshade(0xFFFF00, -1700, 205, -100) // yellow
     addSunshade(0x808080, -2200, 220, 50) // grey
     
-    
-    const sphereGeometry = new THREE.SphereGeometry(70, 10, 10);
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-        color: 0x0000FF,
-        wireframe: false});
-    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    scene.add(sphere);
-    sphere.position.set(-50, 135, 1200);
-    sphere.castShadow = true;
-    sphere.receiveShadow = true;
+    //Criar o campo de futebol
+    createField();
 
     //Criar a rede e campo de volley
     createRede();
 
-    window.addEventListener( 'resize', onWindowResize );
+
+    window.addEventListener( 'resize', function(){
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+    });
 
     window.addEventListener('keydown', function(e){
        if(e.key == "ArrowUp"){
-        boat.speed.vel = 16
+        boat.speed.vel = 15
        }
        if(e.key == "ArrowDown"){
-        boat.speed.vel = -16
+        boat.speed.vel = -15
        }
        if(e.key == "ArrowLeft"){
         boat.speed.rot = 0.05
        }
        if(e.key == "ArrowRight"){
         boat.speed.rot = -0.05
+       }
+       if(e.key === '1'){
+        boatView = !boatView;
+       }
+       if(e.key === '2'){
+            if(activeCamera === camera){ // Se a câmera atual for "camera"
+                activeCamera = cameraFarol; // Alterne para a câmera do farol
+            } else {
+                activeCamera = camera; // Caso contrário, volte para a câmera padrão
+            }
        }
     })
     window.addEventListener('keyup',function(e){
@@ -338,14 +470,10 @@ async function init() {
         voley.color();});
     gui.addColor(options, 'voleyColor2').onChange(function(e){
         voley.color();});
-
     gui.add(options, 'wireframe_ball').onChange(function(e){
         sphere.material.wireframe = e;
     });
     gui.add(options, 'speed', 0, 0.5);
-    gui.add(options, 'angle', 0, 1);
-    gui.add(options, 'penumbra', 0, 1);
-    gui.add(options, 'intensity', 0, 1);
     gui.add(options,'speed_volley',0,0.5);
 
 
@@ -355,28 +483,32 @@ async function init() {
 
 ////////////    FUNCOES  /////////////////
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize( window.innerWidth, window.innerHeight );
+
 }
 
 // Variáveis de controle da animação
 const circleRadius = 3000;
-const ScenerotationSpeed = 0.00025;
+const ScenerotationSpeed = 0.00020;
 let isDaytime = true;
 
 function animate() {
     requestAnimationFrame(animate);
-    
-    boat.update();
-    checkColisoes();
 
-    voley.update();
-    gaivotas.update();
-
-    //Velocidade da bola
-    step += options.speed;
-    sphere.position.y = 110 + 250* Math.abs(Math.sin(step));
+    //Verificar se é dia ou noite
+    const sunY = sun.position.y;
+    if(sunY >= 0 && !isDaytime){
+        // Aparecer a luz direcional para o dia
+        scene.add(directionalLight);
+        scene.remove(spotLight);
+        scene.background = textureLoader.load(sky);
+        isDaytime = true;
+    }else if(sunY < 0 && isDaytime){
+        // Remover a luz direcional para a noite
+        scene.remove(directionalLight);
+        scene.add(spotLight);
+        scene.background = textureLoader.load(skyNoite);
+        isDaytime = false;
+    }
 
     //Atualizações das posições do sol e da lua
     const time = Date.now() * ScenerotationSpeed;
@@ -392,23 +524,18 @@ function animate() {
     //Definir as posicoes para onde as luzes vão apontar
     target();
 
-    //Verificar se é dia ou noite
-    const sunY = sun.position.y;
-    if(sunY >= 0 && !isDaytime){
-        // Aparecer a luz direcional para o dia
-        scene.add(directionalLight);
-        scene.remove(spotLight);
-        renderer.setClearColor(0xadd8e6);
-        scene.background = textureLoader.load(sky);
-        isDaytime = true;
-    }else if(sunY < 0 && isDaytime){
-        // Remover a luz direcional para a noite
-        scene.remove(directionalLight);
-        scene.add(spotLight);
-        scene.background = textureLoader.load(skyNoite);
-        //renderer.setClearColor(0x00008b);
-        isDaytime = false;
-    }
+    //Velocidade da bola
+    step += options.speed;
+    sphere.position.y = 110 + 250* Math.abs(Math.sin(step));
+
+    boat.update();
+    checkColisoes();
+
+    voley.update();
+    gaivotas.update();
+    aviao.update();
+
+
     render();
 }
 
@@ -416,7 +543,7 @@ function render(){
     water.material.uniforms[ 'time' ].value += 1 / 60.0;
     //Verifique se a posição y da câmera está abaixo do limite mínimo
     if (camera.position.y < minY)   camera.position.y = minY;//Definir o y`` da câmara para o limite mínimo
-    renderer.render( scene, camera );
+    renderer.render( scene, activeCamera);
 }
 
 function Animacoes(url,scale,position,rotation){
@@ -558,6 +685,26 @@ function passadicos(position,rotationX){
     }
 }
 
+// Campo de futebol com chinelos
+function createField(){
+    //Adicionar chinelos
+    Animacoes('assets/chinelo/scene.gltf',[0.6,0.6,0.6], [500, 125, 900], [0, 5,-45.4] )
+    Animacoes('assets/chinelo/scene.gltf',[0.6,0.6,0.6], [500, 135, 1500], [0, 5,-45.4])
+    Animacoes('assets/chinelo/scene.gltf',[0.6,0.6,0.6], [-500, 135,900], [0, -5,-45.4])
+    Animacoes('assets/chinelo/scene.gltf',[0.6,0.6,0.6], [-500, 135, 1500], [0, -5,-45.4])
+
+    //Criar a bola de futebol
+    const sphereGeometry = new THREE.SphereGeometry(70, 10, 10);
+    const sphereMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0000FF,
+        wireframe: false});
+    sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(sphere);
+    sphere.position.set(-50, 165, 1200);
+    sphere.castShadow = true;
+    sphere.receiveShadow = true;
+}
+   
 //Campo e rede de volley
 function createRede(){
     const group = new THREE.Group();
@@ -737,6 +884,9 @@ async function addSunshade(color, x, y, z) {
  
     if (color === 0xff0000 || color === 0xFFFF00 || color === 0x808080){
         plane.position.set(x + 150, y-170, z);  
+        if(color == 0xff0000)
+            Animacoes("assets/unicorn/scene.gltf",[35,35,35],[x,y-150,z-80],[0,random(0.8, 2),0])
+
     }else{
         plane.position.set(x - 150, y-170, z);
         const chair = new Animacoes("assets/chair/scene.gltf",[0.5,0.5,0.5],[x+210,y-45,z-20],[0,random(0.8, 2),0]);

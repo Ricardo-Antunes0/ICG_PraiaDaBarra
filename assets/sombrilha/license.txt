@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mimbre sombrilla
+* source:	https://sketchfab.com/3d-models/mimbre-sombrilla-fb5469ee183d4d0e80e5f00ad17c75e0
+* author:	Isaak_ME (https://sketchfab.com/Isaak_me)
+
+Model License:
+* license type:	CC-BY-NC-ND-4.0 (http://creativecommons.org/licenses/by-nc-nd/4.0/)
+* requirements:	Author must be credited. No commercial use. Modified versions can not be distributed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mimbre sombrilla" (https://sketchfab.com/3d-models/mimbre-sombrilla-fb5469ee183d4d0e80e5f00ad17c75e0) by Isaak_ME (https://sketchfab.com/Isaak_me) licensed under CC-BY-NC-ND-4.0 (http://creativecommons.org/licenses/by-nc-nd/4.0/)
