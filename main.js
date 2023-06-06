@@ -3,9 +3,8 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import { Water } from 'three/examples/jsm/objects/Water.js';
 import * as dat from 'dat.gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import sky from '/assets/dia.png';
-import skyNoite from '/assets/noite.jpg';
-
+import sky from './assets/dia.png';
+import skyNoite from './assets/noite.jpg';
 
 let camera,activeCamera, cameraFarol, scene, renderer,controls;
 let water, gaivotas, farol, sun, moon, boat, voley, aviao, stick,pub, sphere;
