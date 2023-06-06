@@ -7,7 +7,7 @@ import sky from '/assets/dia.png';
 import skyNoite from '/assets/noite.jpg';
 
 
-let camera, cameraFarol, scene, renderer,controls;
+let camera,activeCamera, cameraFarol, scene, renderer,controls;
 let water, gaivotas, farol, sun, moon, boat, voley, aviao, stick,pub, sphere;
 let directionalLight,spotLight;
 let step = 0, step1 = 0;
@@ -27,8 +27,6 @@ const loader = new GLTFLoader();
 
 //variável de estado para controlar o sentido do movimento do avião
 let movingForward = true;
-
-let activeCamera;
 
 const options = {
     sphereColor: '#ffea00',
@@ -78,7 +76,6 @@ class Boat{
             this.boat.translateX(this.speed.vel);
 
             controls.update();
-            
             if (boatView) {
                 const cameraPosition = new THREE.Vector3(-500, 800, -2000);
                 const cameraTarget = this.boat.position.clone();
@@ -497,14 +494,12 @@ function animate() {
     //Verificar se é dia ou noite
     const sunY = sun.position.y;
     if(sunY >= 0 && !isDaytime){
-        // Aparecer a luz direcional para o dia
-        scene.add(directionalLight);
+        scene.add(directionalLight);   //Aparecer a luz direcional para o dia
         scene.remove(spotLight);
         scene.background = textureLoader.load(sky);
         isDaytime = true;
     }else if(sunY < 0 && isDaytime){
-        // Remover a luz direcional para a noite
-        scene.remove(directionalLight);
+        scene.remove(directionalLight); //Remover a luz direcional para a noite
         scene.add(spotLight);
         scene.background = textureLoader.load(skyNoite);
         isDaytime = false;
@@ -530,14 +525,13 @@ function animate() {
 
     boat.update();
     checkColisoes();
-
     voley.update();
     gaivotas.update();
     aviao.update();
 
-
     render();
 }
+
 
 function render(){
     water.material.uniforms[ 'time' ].value += 1 / 60.0;
