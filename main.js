@@ -275,7 +275,7 @@ async function init() {
     scene.add(ambientLight);   
   
     // Definir a luz do sol
-    directionalLight = new THREE.DirectionalLight(0xeead2d, 1.1)
+    directionalLight = new THREE.DirectionalLight(0xeead2d, 0.8)
     directionalLight.castShadow = true;
     directionalLight.angle = 1
     directionalLight.shadow.mapSize.width = 2048
@@ -357,11 +357,11 @@ async function init() {
 
     //Adicionar farol
     farol = new Animacoes("assets/lighthouse/scene.gltf",[25, 25,25],[1000,-170,1700],[0,2.8,0]);
-    
+
     //Adicionar bar
     const bar = new Animacoes("assets/bar/scene.gltf",[140, 150,140],[-1200,130,2300],[0,0.05,0]);
-
-    //Adicionar mesas e bancos
+    
+    //Adicionar mesa
     const table = new Animacoes("assets/table/scene.gltf",[140, 150,140],[-400,170,2400],[0,0.05,0]);
 
     //Adicionar sombrilha1
